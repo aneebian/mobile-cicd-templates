@@ -13,6 +13,9 @@ jobs:
   lint-and-test:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: samples/android-app
     steps:
       - uses: actions/checkout@v4
 
@@ -22,6 +25,8 @@ jobs:
           java-version: 17
 
       - uses: gradle/actions/setup-gradle@v4
+        with:
+          build-root-directory: samples/android-app
 
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
@@ -35,6 +40,6 @@ jobs:
         with:
           name: android-reports
           path: |
-            **/build/reports/lint-results-*.html
-            **/build/reports/tests/
+            samples/android-app/**/build/reports/lint-results-*.html
+            samples/android-app/**/build/reports/tests/
           if-no-files-found: ignore
