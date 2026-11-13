@@ -2,7 +2,7 @@ name: Flutter Release
 
 on:
   push:
-    tags: ["v*"]
+    tags: ["flutter-v*"]
   workflow_dispatch:
 
 permissions:
@@ -12,6 +12,9 @@ jobs:
   release:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: samples/flutter-app
     steps:
       - uses: actions/checkout@v4
 
@@ -40,16 +43,16 @@ jobs:
       - name: Build signed APK + AAB
         run: |
           flutter build apk --release \
-            --build-name=${GITHUB_REF_NAME#v} --build-number=${{ github.run_number }}
+            --build-name=${GITHUB_REF_NAME#flutter-v} --build-number=${{ github.run_number }}
           flutter build appbundle --release \
-            --build-name=${GITHUB_REF_NAME#v} --build-number=${{ github.run_number }}
+            --build-name=${GITHUB_REF_NAME#flutter-v} --build-number=${{ github.run_number }}
 
       - uses: actions/upload-artifact@v4
         with:
           name: flutter-release
           path: |
-            build/app/outputs/flutter-apk/app-release.apk
-            build/app/outputs/bundle/release/app-release.aab
+            samples/flutter-app/build/app/outputs/flutter-apk/app-release.apk
+            samples/flutter-app/build/app/outputs/bundle/release/app-release.aab
 
       - name: Distribute to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
@@ -57,7 +60,7 @@ jobs:
           appId: ${{ secrets.FIREBASE_APP_ID }}
           serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
           groups: testers
-          file: build/app/outputs/flutter-apk/app-release.apk
+          file: samples/flutter-app/build/app/outputs/flutter-apk/app-release.apk
           releaseNotes: "Build ${{ github.ref_name }} (run #${{ github.run_number }})"
 
       - name: Create GitHub Release
@@ -66,5 +69,5 @@ jobs:
         with:
           generate_release_notes: true
           files: |
-            build/app/outputs/flutter-apk/app-release.apk
-            build/app/outputs/bundle/release/app-release.aab
+            samples/flutter-app/build/app/outputs/flutter-apk/app-release.apk
+            samples/flutter-app/build/app/outputs/bundle/release/app-release.aab
